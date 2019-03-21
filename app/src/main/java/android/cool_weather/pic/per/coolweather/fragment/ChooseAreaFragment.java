@@ -2,7 +2,9 @@ package android.cool_weather.pic.per.coolweather.fragment;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.cool_weather.pic.per.coolweather.R;
+import android.cool_weather.pic.per.coolweather.WeatherActivity;
 import android.cool_weather.pic.per.coolweather.db.City;
 import android.cool_weather.pic.per.coolweather.db.County;
 import android.cool_weather.pic.per.coolweather.db.Province;
@@ -81,6 +83,11 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectCity = cityList.get(i);
                     queryCounties();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", countyList.get(i).getCountyCode());
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
