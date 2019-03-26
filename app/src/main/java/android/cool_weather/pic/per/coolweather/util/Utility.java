@@ -5,6 +5,7 @@ import android.cool_weather.pic.per.coolweather.db.County;
 import android.cool_weather.pic.per.coolweather.db.Province;
 import android.cool_weather.pic.per.coolweather.gson.Weather;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -16,6 +17,7 @@ import org.json.JSONObject;
  * Created by huping456257 on 2019/3/14.
  */
 public class Utility {
+    private static final String TAG = "Utility";
     public static boolean handleProvinceResponse(String response) {
         if (!TextUtils.isEmpty(response)) {
             try {
@@ -45,7 +47,7 @@ public class Utility {
                     City city = new City();
                     city.setCityName(provinceObject.getString("name"));
                     city.setCityCode(provinceObject.getInt("id"));
-                    city.setProviceId(provinceId);
+                    city.setProvinceId(provinceId);
                     city.save();
                 }
 
@@ -66,6 +68,7 @@ public class Utility {
                     County county = new County();
                     county.setCountyName(countyObject.getString("name"));
                     county.setCountyCode(countyObject.getInt("id"));
+                    county.setWeatherId(countyObject.getString("weather_id"));
                     county.setCityId(cityId);
                     county.save();
                 }
@@ -82,9 +85,9 @@ public class Utility {
     public static Weather handleWeatherReaponse(String response) {
         try {
             JSONObject jsonObject = new JSONObject(response);
-            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
-            String weatherContent = jsonArray.getJSONObject(0).toString();
-            return new Gson().fromJson(weatherContent, Weather.class);
+           // JSONArray jsonArray = jsonObject.getJSONArray("Weather");
+            //String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(jsonObject.toString(), Weather.class);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -6,21 +6,20 @@ import com.google.gson.annotations.SerializedName;
  * Created by huping on 2019/3/19.
  */
 public class Forecast {
-    public  String date;
+    public String date;
+    public String ymd;
+    public String week;
+    public String sunrise;
 
-    @SerializedName("tmp")
-    public Temperature temperature;
+    @SerializedName("high")
+    public String hignTemperature;
+    @SerializedName("low")
+    public String lowTemperature;
 
-    @SerializedName("cond")
-    public More more;
-
-    public class Temperature {
-        public String max;
-        public String min;
-    }
-
-    public class More {
-        @SerializedName("txt_d")
-        public String info;
-    }
+    public String sunset;
+    public String aqi;
+    public String fx;
+    public String fl;
+    public String type;
+    public String notice;
 }

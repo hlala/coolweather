@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.view.ScrollingView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,6 +27,8 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class WeatherActivity extends AppCompatActivity {
+    private static final String TAG = "WeatherActivity";
+
     private ScrollView weatherLayout;
 
     private TextView titleCity;
@@ -69,6 +72,7 @@ public class WeatherActivity extends AppCompatActivity {
             showWeatherInfo(weather);
         } else {
             String weatherId = getIntent().getStringExtra("weather_id");
+            Log.d(TAG, "onCreate: pinghu:" + weatherId);
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
         }
@@ -106,7 +110,9 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     private void requestWeather(final String weatherId) {
-        String weatherURL = "http://guolin.tech/api/weather?=cityid" + weatherId;
+        String weatherURL = "http://t.weather.sojson.com/api/weather/city/" + weatherId.substring(2);
+        Log.d(TAG, "requestWeather: pinghu:" + weatherURL);
+
         HttpUtil.sendOKHttpRequest(weatherURL, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -120,7 +126,8 @@ public class WeatherActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                final String responseStr = response.body().toString();
+                final String responseStr = response.body().string();
+                Log.d(TAG, "onResponse: pinghu:" + responseStr);
                 final Weather weather = Utility.handleWeatherReaponse(responseStr);
                 runOnUiThread(new Runnable() {
                     @Override
@@ -141,36 +148,35 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     private void showWeatherInfo(Weather weather) {
-        String cityName = weather.basic.cityName;
-        String updateTime = weather.basic.updata.updataTime.split(" ")[1];
-        String degree = weather.now.temperature + "℃";
-        String weatherInfo = weather.now.more.info;
+        String cityName = weather.cityInfo.cityName;
+        String updateTime = weather.cityInfo.updateTime;
+        String degree = weather.data.temperature + "℃";
+        String weatherInfo = weather.data.forecastList.get(0).type;
         titleCity.setText(cityName);
         titleUpdataTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
 
         forecastLayout.removeAllViews();
-        for (Forecast forecast : weather.forecastList) {
+        for (Forecast forecast : weather.data.forecastList) {
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
             TextView dataText = (TextView) view.findViewById(R.id.data_text);
             TextView infoText = (TextView) view.findViewById(R.id.info_text);
             TextView maxText = (TextView) view.findViewById(R.id.max_text);
             TextView minText = (TextView) view.findViewById(R.id.min_text);
 
-            dataText.setText(forecast.date);
-            infoText.setText(forecast.more.info);
-            maxText.setText(forecast.temperature.max);
-            minText.setText(forecast.temperature.min);
+            dataText.setText(forecast.ymd);//时间
+            infoText.setText(forecast.type);//请
+            maxText.setText(forecast.hignTemperature.substring(2));
+            minText.setText(forecast.lowTemperature.substring(2));
             forecastLayout.addView(view);
         }
-        if (weather.aqi != null) {
-            aqiText.setText(weather.aqi.city.aqi);
-            pm25Text.setText(weather.aqi.city.pm25);
-        }
-        String comfort = "舒适度：" + weather.suggestion.comfort.info;
-        String carWash = "洗车指数：" + weather.suggestion.carWash.info;
-        String sport = "运动建议：" + weather.suggestion.sport.info;
+        aqiText.setText(weather.data.pm10);
+        pm25Text.setText(weather.data.pm25);
+
+        String comfort = "感冒：" + weather.data.ganmao;
+        String carWash = "空气质量：" + weather.data.quality;
+        String sport = "看这里：" + weather.data.forecastList.get(0).notice;
         comfortText.setText(comfort);
         carWashText.setText(carWash);
         sportText.setText(sport);

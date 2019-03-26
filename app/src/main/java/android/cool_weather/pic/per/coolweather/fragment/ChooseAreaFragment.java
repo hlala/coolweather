@@ -12,6 +12,7 @@ import android.cool_weather.pic.per.coolweather.util.HttpUtil;
 import android.cool_weather.pic.per.coolweather.util.Utility;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,8 @@ import okhttp3.Response;
  * Created by huping456257 on 2019/3/18.
  */
 public class ChooseAreaFragment extends Fragment {
+    private static final String TAG = "ChooseAreaFragment";
+
     public static final int LEVEL_PROVINCE = 0;
     public static final int LEVEL_CITY = 1;
     public static final int LEVEL_COUNTY = 2;
@@ -65,7 +68,7 @@ public class ChooseAreaFragment extends Fragment {
         backButton = (Button) view.findViewById(R.id.back_button);
         listView = (ListView) view.findViewById(R.id.list_view);
 
-        adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, dataList);
+        adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
 
         return view;
@@ -85,7 +88,8 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 } else if (currentLevel == LEVEL_COUNTY) {
                     Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id", countyList.get(i).getCountyCode());
+                    Log.d(TAG, "onItemClick: pinghu:" + countyList.get(i).getWeatherId());
+                    intent.putExtra("weather_id", countyList.get(i).getWeatherId());
                     startActivity(intent);
                     getActivity().finish();
                 }
@@ -110,7 +114,7 @@ public class ChooseAreaFragment extends Fragment {
         titleView.setText(selectProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
 
-        cityList = DataSupport.where("provinceid = ?" + selectProvince.getId()).find(City.class);
+        cityList = DataSupport.where("provinceid = " + String.valueOf(selectProvince.getProvinceCode())).find(City.class);
         if (cityList != null && cityList.size() > 0) {
             dataList.clear();
             for (City city : cityList) {
@@ -121,7 +125,7 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_CITY;
         } else {
-            queryFromServer("http://guolin.teach/qpi/china" + selectProvince.getProvinceCode(), "city");
+            queryFromServer("http://guolin.tech/api/china/" + selectProvince.getProvinceCode(), "city");
         }
     }
 
@@ -129,7 +133,7 @@ public class ChooseAreaFragment extends Fragment {
         titleView.setText(selectCity.getCityName());
         backButton.setVisibility(View.VISIBLE);
 
-        countyList = DataSupport.where("cityid = ?" + selectCity.getId()).find(County.class);
+        countyList = DataSupport.where("cityid = " + selectCity.getCityCode()).find(County.class);
         if (countyList != null && countyList.size() > 0) {
             dataList.clear();
             for (County county : countyList) {
@@ -140,7 +144,7 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_COUNTY;
         } else {
-            queryFromServer("http://guolin.teach/qpi/china" + selectProvince.getProvinceCode()
+            queryFromServer("http://guolin.tech/api/china/" + selectProvince.getProvinceCode()
                                                         + "/" + selectCity.getCityCode(), "county");
         }
     }
@@ -160,7 +164,7 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_PROVINCE;
         } else {
-            queryFromServer("http://guolin.teach/qpi/china", "province");
+            queryFromServer("http://guolin.tech/api/china", "province");
         }
     }
 
@@ -172,7 +176,7 @@ public class ChooseAreaFragment extends Fragment {
             public void onResponse(Call call, Response response) throws IOException {
                 String responseStr = response.body().string();
                 boolean isSuccess = false;
-                switch (responseStr) {
+                switch (type) {
                     case "province" :
                         isSuccess = Utility.handleProvinceResponse(responseStr);
                         break;
@@ -207,6 +211,7 @@ public class ChooseAreaFragment extends Fragment {
 
             @Override
             public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

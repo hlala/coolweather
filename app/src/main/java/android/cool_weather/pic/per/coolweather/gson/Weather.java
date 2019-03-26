@@ -5,15 +5,13 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 /**
- * Created by huping456257 on 2019/3/19.
+ * Created by huping on 2019/3/19.
  */
 public class Weather {
+    public String time;
+    public CityInfo cityInfo;
+    public String date;
+    public String message;
     public String status;
-    public Basic basic;
-    public AQI aqi;
-    public Now now;
-    public Suggestion suggestion;
-
-    @SerializedName("daily_forecast")
-    public List<Forecast> forecastList;
+    public WeatherData data;
 }
